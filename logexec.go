@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -53,16 +54,38 @@ func init() {
 
 func logPipe(w io.Writer, r io.Reader) {
 	defer wg.Done()
-	s := bufio.NewScanner(r)
-	defer func() {
-		if err := s.Err(); err != nil {
-			logErr <- err
+	s := bufio.NewReaderSize(r, *maxLogLine*2)
+	lastWasPrefix := false
+	for {
+		line, isPrefix, err := s.ReadLine()
+
+		if err == io.EOF {
+			logErr <- errors.New("Error reading: got EOF. Exiting\n")
+			return
 		}
-	}()
-	for s.Scan() {
-		l := bytes.TrimSpace(s.Bytes())
+
+		if err != nil {
+			logErr <- err
+			return
+		}
+
+		switch {
+		case isPrefix && !lastWasPrefix:
+			// first part of long line
+			lastWasPrefix = true
+		case isPrefix && lastWasPrefix:
+			// middle part of long line
+			continue
+		case !isPrefix && lastWasPrefix:
+			// got last part of long line
+			lastWasPrefix = false
+			continue
+		}
+
+		l := bytes.TrimSpace(line)
 		if len(l) > *maxLogLine {
-			l = l[:*maxLogLine]
+			l = l[:*maxLogLine-3]
+			l = append(l, "..."...)
 		}
 
 		_, werr := w.Write(l)
