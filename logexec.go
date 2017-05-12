@@ -214,9 +214,7 @@ func main() {
 				os.Exit(estatus)
 			}
 		case err = <-logErr:
-			if err != nil && err != io.EOF &&
-				!strings.Contains(err.Error(), "bad file descriptor") {
-
+			if err != nil && err != io.EOF && !strings.Contains(err.Error(), "bad file descriptor") {
 				cmd.Process.Kill()
 				if !strings.Contains(err.Error(), "got EOF") {
 					fmt.Fprintf(stderrLog, "Error logging command output: %v", err)
