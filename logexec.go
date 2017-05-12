@@ -52,6 +52,27 @@ func init() {
 
 }
 
+func UnixSyslog(priority syslog.Priority, tag string) (*syslog.Writer, error) {
+	logTypes := []string{"unixgram", "unix"}
+	logPaths := []string{
+		"/run/systemd/journal/syslog",
+		"/dev/log",
+		"/var/run/syslog",
+		"/var/run/log",
+	}
+	for _, network := range logTypes {
+		for _, path := range logPaths {
+			slog, err := syslog.Dial(network, path, priority, tag)
+			if err != nil {
+				continue
+			} else {
+				return slog, nil
+			}
+		}
+	}
+	return nil, errors.New("Unix syslog delivery error")
+}
+
 func logPipe(w io.Writer, r io.Reader) {
 	defer wg.Done()
 	s := bufio.NewReaderSize(r, *maxLogLine*2)
@@ -99,12 +120,15 @@ func logPipe(w io.Writer, r io.Reader) {
 func startCmd(cmdName string, args ...string) (*exec.Cmd, error) {
 	var err error
 	lvl := syslog.Priority(stdoutLevel) | syslog.Priority(facility)
-	stdoutLog, err = syslog.New(lvl, tag)
+	//stdoutLog, err = syslog.New(lvl, tag)
+	stdoutLog, err = UnixSyslog(lvl, tag)
 	if err != nil {
 		log.Fatalf("Error initializing stdout syslog: %v", err)
 	}
 	lvl = syslog.Priority(stderrLevel) | syslog.Priority(facility)
-	stderrLog, err = syslog.New(lvl, tag)
+
+	//stderrLog, err = syslog.New(lvl, tag)
+	stderrLog, err = UnixSyslog(lvl, tag)
 	if err != nil {
 		log.Fatalf("Error initializing stderr syslog: %v", err)
 	}
@@ -194,7 +218,9 @@ func main() {
 				!strings.Contains(err.Error(), "bad file descriptor") {
 
 				cmd.Process.Kill()
-				fmt.Fprintf(stderrLog, "Error logging command output: %v", err)
+				if !strings.Contains(err.Error(), "got EOF") {
+					fmt.Fprintf(stderrLog, "Error logging command output: %v", err)
+				}
 				log.Fatalf("Error logging command output: %v", err)
 			}
 		}
