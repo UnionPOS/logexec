@@ -81,7 +81,8 @@ func logPipe(w io.Writer, r io.Reader) {
 		line, isPrefix, err := s.ReadLine()
 
 		if err == io.EOF {
-			logErr <- errors.New("Error reading: got EOF. Exiting\n")
+			// logErr <- errors.New("Error reading: got EOF. Exiting\n")
+			logErr <- io.EOF
 			return
 		}
 
@@ -216,9 +217,7 @@ func main() {
 		case err = <-logErr:
 			if err != nil && err != io.EOF && !strings.Contains(err.Error(), "bad file descriptor") {
 				cmd.Process.Kill()
-				if !strings.Contains(err.Error(), "got EOF") {
-					fmt.Fprintf(stderrLog, "Error logging command output: %v", err)
-				}
+				fmt.Fprintf(stderrLog, "Error logging command output: %v", err)
 				log.Fatalf("Error logging command output: %v", err)
 			}
 		}
