@@ -1,5 +1,10 @@
 *#
 *~
+*.rpm
+/bin
+/pkg
+/tar
+/man/*.[1-9]
 /logexec
 /build
-*.rpm
+/vendor/src
