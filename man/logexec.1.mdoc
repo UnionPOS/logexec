@@ -1,0 +1,37 @@
+.Dd May 15, 2017
+.Dt LOGEXEC \&1 "General Commands Manual"
+.Os LOGEXEC VERSION
+.Sh NAME
+.Nm logexec
+.Nd run a command and sends its stdout/stderr to syslog
+.Sh SYNOPSIS
+.Nm logexec
+.Oo
+.Em OPTIONS Ns
+.Oc
+.Oo
+.Em OPTION-ARGUMENTS Ns 
+.Oc
+.Sh DESCRIPTION
+.Sy logexec
+runs a command and sends its stdout/stderr to syslog.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl facility Ns = Ns Aq Ar level
+logging facility (default local0)
+.It Fl ignoresig
+Do not pass signals on to child process
+.It Fl maxline Ns = Ns Aq Ar length
+maximum amount of text to log in a line (default 8192)
+.It Fl stderrLevel Ns = Ns Aq Ar value
+log level for stderr (default warning)
+.It Fl stdoutLevel Ns = Ns Aq Ar value
+log level for stdout (default info)
+.It Fl tag Ns = Ns Aq Ar string
+Tag for all log messages (default "logexec")
+.El 
+.Sh EXAMPLES
+Running a program named test-prog with logexec:
+.Bd -literal
+ logexec -ignoresig -tag test-prog -- /usr/local/bin/test-prog "test"
+.Ed
