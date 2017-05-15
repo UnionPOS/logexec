@@ -28,14 +28,14 @@ Building requires:
 
 Building:
 
-# prepare build environment
-$ make build-setup
+    # prepare build environment
+    $ make build-setup
 
-# build binary
-$ make build
+    # build binary
+    $ make build
 
-# build binary tarball
-$ make tar
+    # build binary tarball
+    $ make tar
 
-# build cross compiled binary tarballs
-$ make cross-tar
+    # build cross compiled binary tarballs
+    $ make cross-tar
