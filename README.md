@@ -4,6 +4,7 @@ logexec
 ## Contents
 
 *   [About](#about)
+*   [Building](#building)
 
 ## About
 
